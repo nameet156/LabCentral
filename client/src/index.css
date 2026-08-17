@@ -1,0 +1,212 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-heading: 'Space Grotesk', 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  /* Primary accent (indigo) */
+  --color-primary-50: #eef2ff;
+  --color-primary-100: #e0e7ff;
+  --color-primary-200: #c7d2fe;
+  --color-primary-300: #a5b4fc;
+  --color-primary-400: #818cf8;
+  --color-primary-500: #6366f1;
+  --color-primary-600: #4f46e5;
+  --color-primary-700: #4338ca;
+  --color-primary-800: #3730a3;
+  --color-primary-900: #312e81;
+
+  /* Surface / neutral scale — dark mode defaults */
+  --color-surface-50: #fafafa;
+  --color-surface-100: #f4f4f5;
+  --color-surface-200: #e4e4e7;
+  --color-surface-300: #d4d4d8;
+  --color-surface-400: #a1a1aa;
+  --color-surface-500: #71717a;
+  --color-surface-600: #52525b;
+  --color-surface-700: #3f3f46;
+  --color-surface-800: #27272a;
+  --color-surface-850: #1e1e22;
+  --color-surface-900: #18181b;
+  --color-surface-950: #09090b;
+
+  /* Status colors */
+  --color-status-received: #94a3b8;
+  --color-status-in-progress: #60a5fa;
+  --color-status-qc-review: #fbbf24;
+  --color-status-completed: #34d399;
+  --color-status-rejected: #f87171;
+
+  --color-status-received-bg: #94a3b815;
+  --color-status-in-progress-bg: #60a5fa15;
+  --color-status-qc-review-bg: #fbbf2415;
+  --color-status-completed-bg: #34d39915;
+  --color-status-rejected-bg: #f8717115;
+}
+
+/* ─── Dark mode (default) ────────────────────────────── */
+html {
+  color-scheme: dark;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-surface-950);
+  color: var(--color-surface-100);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Light mode ─────────────────────────────────────── */
+html.light {
+  color-scheme: light;
+
+  --color-surface-50: #09090b;
+  --color-surface-100: #18181b;
+  --color-surface-200: #27272a;
+  --color-surface-300: #3f3f46;
+  --color-surface-400: #52525b;
+  --color-surface-500: #71717a;
+  --color-surface-600: #a1a1aa;
+  --color-surface-700: #d4d4d8;
+  --color-surface-800: #e4e4e7;
+  --color-surface-850: #eeeef0;
+  --color-surface-900: #f4f4f5;
+  --color-surface-950: #ffffff;
+
+  --color-primary-400: #4f46e5;
+  --color-primary-500: #4338ca;
+  --color-primary-600: #4f46e5;
+}
+
+html.light body {
+  background-color: #f8fafc;
+  color: #1e293b;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+/* ─── Scrollbar ──────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-surface-600);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-surface-500);
+}
+
+/* ─── Login animated gradient ────────────────────────── */
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.animated-gradient {
+  background: linear-gradient(-45deg, #312e81, #4338ca, #1e1b4b, #0f172a);
+  background-size: 400% 400%;
+  animation: gradient-shift 15s ease infinite;
+}
+
+/* ─── Glass card ─────────────────────────────────────── */
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+html.light .glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* ─── Light mode input overrides ─────────────────────── */
+html.light input,
+html.light textarea,
+html.light select {
+  background-color: #ffffff !important;
+  border-color: #d4d4d8 !important;
+  color: #18181b !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #a1a1aa !important;
+}
+
+html.light input:focus,
+html.light textarea:focus,
+html.light select:focus {
+  border-color: #4f46e5 !important;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15) !important;
+}
+
+/* ─── Light mode sidebar & topbar ────────────────────── */
+html.light aside {
+  background-color: #ffffff !important;
+  border-color: #e4e4e7 !important;
+}
+
+html.light header {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+  border-color: #e4e4e7 !important;
+  backdrop-filter: blur(16px);
+}
+
+/* ─── Light mode toast ───────────────────────────────── */
+html.light .pointer-events-auto {
+  background-color: #ffffff !important;
+  border-color: #e4e4e7 !important;
+  color: #18181b !important;
+}
+
+/* ─── Light mode skeleton / pulse ────────────────────── */
+html.light .animate-pulse > div,
+html.light .animate-pulse {
+  --tw-bg-opacity: 1;
+}
+
+/* ─── Subtle pattern overlay for depth ───────────────── */
+.pattern-dots {
+  background-image: radial-gradient(circle, rgba(99, 102, 241, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+html.light .pattern-dots {
+  background-image: radial-gradient(circle, rgba(99, 102, 241, 0.06) 1px, transparent 1px);
+}
+
+/* ─── Glow effect for accents ────────────────────────── */
+.glow-primary {
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.15), 0 0 60px rgba(99, 102, 241, 0.05);
+}
+
+html.light .glow-primary {
+  box-shadow: 0 0 20px rgba(79, 70, 229, 0.1), 0 0 40px rgba(79, 70, 229, 0.04);
+}
+
+/* ─── Stat card shimmer animation ────────────────────── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.05) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+}
