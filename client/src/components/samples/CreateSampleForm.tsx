@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader2, Droplets, Leaf, Wheat } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 import { samplesApi, type SampleType } from '@/api/samples.api';
 
 interface CreateSampleFormProps {
@@ -16,6 +17,7 @@ const SAMPLE_TYPES: { value: SampleType; label: string; icon: typeof Droplets; c
 ];
 
 export function CreateSampleForm({ isOpen, onClose, onCreated }: CreateSampleFormProps) {
+  const { user } = useAuth();
   const [type, setType] = useState<SampleType>('water');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,6 +31,7 @@ export function CreateSampleForm({ isOpen, onClose, onCreated }: CreateSampleFor
     try {
       await samplesApi.create({
         type,
+        assignedTo: user?._id,
         notes: notes.trim() || undefined,
       });
       onCreated();

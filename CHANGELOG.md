@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.2] — 2026-08-17
+
+### 🐛 Fixed
+
+- **"Assigned To: Unassigned" Clarification & Fix** — When creating a sample, it is now automatically assigned to the authenticated user creating it, eliminating the confusing "Unassigned" placeholder.
+- **Cleared Sample Data** — Started with an empty database instance ready for fresh live demo use.
+- **SPA Fallback Routing** — Added Express 5 compatible SPA static asset serving so deep links (e.g. `/reports`, `/samples/:id`) work seamlessly when hosting.
+
+### 🚀 Added
+
+- **Unified Production Build & Hosting Readiness** — Added root `package.json` with `npm run build` and `npm start` commands. The backend Express server now serves the built Vite React frontend (`client/dist`), enabling zero-cost, single-service deployment on platforms like Render or Railway.
+
+---
+
 ## [1.0.1] — 2026-08-16
 
 ### 🎨 Changed
