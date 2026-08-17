@@ -335,6 +335,4 @@ After running `npm run seed`:
 
 ---
 
-## License
 
-This project is for portfolio/demonstration purposes.
