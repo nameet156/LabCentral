@@ -1,8 +1,7 @@
 import { useAuth } from '@/context/AuthContext';
-import { LogOut, Sun, Moon, Menu, Activity } from 'lucide-react';
+import { LogOut, Sun, Moon, Menu, Activity, LayoutDashboard, BarChart3, Users } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, BarChart3 } from 'lucide-react';
 
 export default function Topbar() {
   const { user, logout } = useAuth();
@@ -111,9 +110,16 @@ export default function Topbar() {
               ${isActive ? 'text-primary-400 bg-primary-600/15' : 'text-surface-400 hover:text-surface-200 hover:bg-surface-800/50'}`}>
               <BarChart3 className="w-5 h-5" /> Reports
             </NavLink>
+            {user?.role === 'admin' && (
+              <NavLink to="/users" className={({ isActive }) => `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+                ${isActive ? 'text-primary-400 bg-primary-600/15' : 'text-surface-400 hover:text-surface-200 hover:bg-surface-800/50'}`}>
+                <Users className="w-5 h-5" /> Users
+              </NavLink>
+            )}
           </nav>
         </div>
       )}
     </>
   );
 }
+
