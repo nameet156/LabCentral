@@ -6,6 +6,7 @@ import RegisterPage from '@/pages/RegisterPage';
 import DashboardPage from '@/pages/DashboardPage';
 import ReportsPage from '@/pages/ReportsPage';
 import SampleDetailPage from '@/pages/SampleDetailPage';
+import UsersPage from '@/pages/UsersPage';
 import AppLayout from '@/components/layout/AppLayout';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -20,6 +21,13 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { user, isLoading } = useAuth();
+  if (isLoading) return null;
+  if (!user || user.role !== 'admin') return <Navigate to="/" replace />;
   return <>{children}</>;
 }
 
@@ -40,9 +48,11 @@ export default function App() {
           <Route path="/" element={<DashboardPage />} />
           <Route path="/samples/:id" element={<SampleDetailPage />} />
           <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/users" element={<AdminRoute><UsersPage /></AdminRoute>} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AnimatePresence>
   );
 }
+

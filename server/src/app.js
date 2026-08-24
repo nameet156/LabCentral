@@ -4,6 +4,7 @@ const path = require('path');
 const authRoutes = require('./routes/auth.routes');
 const sampleRoutes = require('./routes/sample.routes');
 const reportRoutes = require('./routes/report.routes');
+const userRoutes = require('./routes/user.routes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -21,6 +22,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/samples', sampleRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/users', userRoutes);
 
 // --- Serve static assets in production / single-service deployment ---
 const clientDistPath = path.join(__dirname, '../../client/dist');

@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.3] — 2026-08-24
+
+### ✨ Added
+
+- **Admin User Management Dashboard** (`/users`) — A dedicated management suite exclusively accessible to administrators:
+  - Overview metrics for total registered personnel, active administrators, bench technicians, and read-only viewers.
+  - Interactive search and filter controls to quickly find users by name, email, or role tier.
+  - **Role & Profile Editing Modal**: Instant ability to promote or reassign staff roles between Admin, Technician, and Viewer with contextual permission descriptions.
+  - **Account Deletion with Safeguards**: Permanent user removal with safety confirmation modals, self-deletion prevention (admins cannot delete their own active account), and last-administrator protection.
+- **Role-Gated Navigation** — The **Users** tab automatically renders in the Sidebar and mobile drawer navigation for administrators while remaining hidden from technicians and viewers.
+- **Admin REST API** — Added `GET /api/users`, `PATCH /api/users/:id`, and `DELETE /api/users/:id` endpoints protected by JWT authentication and role-based authorization middleware.
+
+---
+
 ## [1.0.2] — 2026-08-17
 
 ### 🐛 Fixed

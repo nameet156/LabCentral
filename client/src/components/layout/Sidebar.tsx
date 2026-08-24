@@ -1,14 +1,17 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, BarChart3, FlaskConical, Activity } from 'lucide-react';
+import { LayoutDashboard, BarChart3, Users, Activity } from 'lucide-react';
 import { motion } from 'framer-motion';
-
-const navItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/reports', icon: BarChart3, label: 'Reports' },
-];
+import { useAuth } from '@/context/AuthContext';
 
 export default function Sidebar() {
   const location = useLocation();
+  const { user } = useAuth();
+
+  const navItems = [
+    { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/reports', icon: BarChart3, label: 'Reports' },
+    ...(user?.role === 'admin' ? [{ to: '/users', icon: Users, label: 'Users' }] : []),
+  ];
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-surface-900 border-r border-surface-800 flex flex-col z-30
@@ -54,8 +57,9 @@ export default function Sidebar() {
 
       {/* Footer */}
       <div className="px-4 py-4 border-t border-surface-800">
-        <p className="text-xs text-surface-500 text-center">v1.0.1 • LabCentral LIMS</p>
+        <p className="text-xs text-surface-500 text-center">v1.0.3 • LabCentral LIMS</p>
       </div>
     </aside>
   );
 }
+
