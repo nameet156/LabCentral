@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, UserCheck, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/components/ui/Toast';
 import { samplesApi, type Sample, type SampleStatus, type AuditLogEntry } from '@/api/samples.api';
+import { usersApi } from '@/api/users.api';
+import type { User } from '@/api/auth.api';
 import { AuditTimeline } from '@/components/samples/AuditTimeline';
 import { NotesSection } from '@/components/samples/NotesSection';
 
@@ -33,12 +36,15 @@ const getStatusColor = (status: string) => {
 export default function SampleDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const toast = useToast();
   
   const [sample, setSample] = useState<Sample | null>(null);
   const [auditLog, setAuditLog] = useState<AuditLogEntry[]>([]);
+  const [staffList, setStaffList] = useState<Pick<User, '_id' | 'name' | 'email' | 'role'>[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusUpdating, setStatusUpdating] = useState(false);
+  const [isAssigning, setIsAssigning] = useState(false);
 
   const fetchSampleData = async () => {
     if (!id) return;
@@ -57,6 +63,9 @@ export default function SampleDetailPage() {
 
   useEffect(() => {
     fetchSampleData();
+    usersApi.listAssignable()
+      .then(res => setStaffList(res.data.users))
+      .catch(err => console.error('Failed to fetch staff list', err));
   }, [id]);
 
   const handleStatusChange = async (newStatus: string) => {
@@ -65,11 +74,27 @@ export default function SampleDetailPage() {
       setStatusUpdating(true);
       await samplesApi.updateStatus(id, { status: newStatus as SampleStatus, version: sample.__v });
       await fetchSampleData();
-    } catch (err) {
+      toast.success(`Sample status updated to ${formatStatus(newStatus)}`);
+    } catch (err: any) {
       console.error('Failed to update status', err);
-      alert('Failed to update status. The sample may have been modified by someone else.');
+      toast.error(err.response?.data?.error || 'Failed to update status. The sample may have been modified by someone else.');
     } finally {
       setStatusUpdating(false);
+    }
+  };
+
+  const handleAssignChange = async (newAssigneeId: string) => {
+    if (!id || !sample) return;
+    try {
+      setIsAssigning(true);
+      const res = await samplesApi.assign(id, newAssigneeId || null);
+      setSample(res.data.sample);
+      const assigneeName = res.data.sample.assignedTo?.name || 'Unassigned';
+      toast.success(`Assigned to ${assigneeName}`);
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Failed to update assignment');
+    } finally {
+      setIsAssigning(false);
     }
   };
 
@@ -150,21 +175,48 @@ export default function SampleDetailPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-6 border-t border-surface-800">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 pt-6 border-t border-surface-800">
           <div>
             <div className="text-xs text-surface-500 mb-1">Created By</div>
             <div className="text-sm font-medium text-surface-200">{sample.createdBy?.name || 'Unknown'}</div>
           </div>
+
           <div>
-            <div className="text-xs text-surface-500 mb-1">Assigned To</div>
-            <div className="text-sm font-medium text-surface-200">{sample.assignedTo?.name || 'Unassigned'}</div>
+            <div className="text-xs text-surface-500 mb-1 flex items-center gap-1">
+              <UserCheck className="w-3.5 h-3.5 text-primary-400" />
+              <span>Assigned To</span>
+            </div>
+            {canEdit ? (
+              <div className="relative">
+                <select
+                  value={sample.assignedTo?._id || ''}
+                  onChange={(e) => handleAssignChange(e.target.value)}
+                  disabled={isAssigning}
+                  className="w-full bg-surface-900 border border-surface-700 rounded-lg px-2.5 py-1 text-sm font-medium text-surface-200 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50"
+                >
+                  <option value="">Unassigned</option>
+                  {staffList.map((staff) => (
+                    <option key={staff._id} value={staff._id}>
+                      {staff.name} ({staff.role.charAt(0).toUpperCase() + staff.role.slice(1)})
+                    </option>
+                  ))}
+                </select>
+                {isAssigning && (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin absolute right-2 top-2 text-primary-400 pointer-events-none" />
+                )}
+              </div>
+            ) : (
+              <div className="text-sm font-medium text-surface-200">{sample.assignedTo?.name || 'Unassigned'}</div>
+            )}
           </div>
+
           <div>
             <div className="text-xs text-surface-500 mb-1">Created At</div>
             <div className="text-sm font-medium text-surface-200">
               {new Date(sample.createdAt).toLocaleDateString()}
             </div>
           </div>
+
           <div>
             <div className="text-xs text-surface-500 mb-1">Last Updated</div>
             <div className="text-sm font-medium text-surface-200">
@@ -186,3 +238,4 @@ export default function SampleDetailPage() {
     </motion.div>
   );
 }
+

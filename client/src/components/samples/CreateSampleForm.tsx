@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Loader2, Droplets, Leaf, Wheat } from 'lucide-react';
+import { X, Loader2, Droplets, Leaf, Wheat, UserCheck } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { samplesApi, type SampleType } from '@/api/samples.api';
+import { usersApi } from '@/api/users.api';
+import type { User } from '@/api/auth.api';
 
 interface CreateSampleFormProps {
   isOpen: boolean;
@@ -19,9 +21,23 @@ const SAMPLE_TYPES: { value: SampleType; label: string; icon: typeof Droplets; c
 export function CreateSampleForm({ isOpen, onClose, onCreated }: CreateSampleFormProps) {
   const { user } = useAuth();
   const [type, setType] = useState<SampleType>('water');
+  const [assignedTo, setAssignedTo] = useState<string>('');
+  const [staffList, setStaffList] = useState<Pick<User, '_id' | 'name' | 'email' | 'role'>[]>([]);
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Set default assignedTo to current user when opened
+  useEffect(() => {
+    if (isOpen) {
+      if (user?._id) {
+        setAssignedTo(user._id);
+      }
+      usersApi.listAssignable()
+        .then(res => setStaffList(res.data.users))
+        .catch(err => console.error('Failed to load assignable staff', err));
+    }
+  }, [isOpen, user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,13 +47,14 @@ export function CreateSampleForm({ isOpen, onClose, onCreated }: CreateSampleFor
     try {
       await samplesApi.create({
         type,
-        assignedTo: user?._id,
+        assignedTo: assignedTo || undefined,
         notes: notes.trim() || undefined,
       });
       onCreated();
       onClose();
       setType('water');
       setNotes('');
+      if (user?._id) setAssignedTo(user._id);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to create sample');
     } finally {
@@ -66,7 +83,7 @@ export function CreateSampleForm({ isOpen, onClose, onCreated }: CreateSampleFor
             <div className="flex items-center justify-between p-6 border-b border-surface-800">
               <div>
                 <h2 className="text-xl font-heading font-semibold text-surface-50">New Sample</h2>
-                <p className="text-sm text-surface-400 mt-0.5">Register a new sample for analysis</p>
+                <p className="text-sm text-surface-400 mt-0.5">Register and assign a sample for analysis</p>
               </div>
               <button
                 onClick={onClose}
@@ -111,6 +128,36 @@ export function CreateSampleForm({ isOpen, onClose, onCreated }: CreateSampleFor
                   </div>
                 </div>
 
+                {/* Assigned To Selection */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-surface-300 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <UserCheck className="w-4 h-4 text-primary-400" />
+                      Assigned To (Lab Personnel)
+                    </span>
+                    <span className="text-xs text-surface-500 font-normal">Optional</span>
+                  </label>
+                  <select
+                    value={assignedTo}
+                    onChange={(e) => setAssignedTo(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-surface-900 border border-surface-700 rounded-xl text-surface-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  >
+                    {user?._id && (
+                      <option value={user._id}>
+                        Assign to me ({user.name}) — Current User
+                      </option>
+                    )}
+                    <option value="">Unassigned (Queue for Triage)</option>
+                    {staffList
+                      .filter(s => s._id !== user?._id)
+                      .map((staff) => (
+                        <option key={staff._id} value={staff._id}>
+                          {staff.name} ({staff.role.charAt(0).toUpperCase() + staff.role.slice(1)}) — {staff.email}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-surface-300">
                     Initial Notes
@@ -145,3 +192,4 @@ export function CreateSampleForm({ isOpen, onClose, onCreated }: CreateSampleFor
     </AnimatePresence>
   );
 }
+

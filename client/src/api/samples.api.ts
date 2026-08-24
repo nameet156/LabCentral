@@ -53,6 +53,8 @@ export const samplesApi = {
     api.post<{ sample: Sample }>('/samples', data),
   updateStatus: (id: string, data: { status: SampleStatus; version: number }) =>
     api.patch<{ sample: Sample }>(`/samples/${id}/status`, data),
+  assign: (id: string, assignedTo: string | null) =>
+    api.patch<{ sample: Sample }>(`/samples/${id}/assign`, { assignedTo }),
   addNote: (id: string, text: string) =>
     api.post<{ sample: Sample }>(`/samples/${id}/notes`, { text }),
   getAuditLog: (id: string) =>
