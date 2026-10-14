@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Loader2, Droplets, Leaf, Wheat, UserCheck } from 'lucide-react';
+import { AlertCircle, Droplets, Leaf, Loader2, UserCheck, Wheat, X } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { samplesApi, type SampleType } from '@/api/samples.api';
 import { usersApi } from '@/api/users.api';
 import type { User } from '@/api/auth.api';
+import { Button } from '@/components/ui/primitives';
 
 interface CreateSampleFormProps {
   isOpen: boolean;
@@ -13,9 +14,9 @@ interface CreateSampleFormProps {
 }
 
 const SAMPLE_TYPES: { value: SampleType; label: string; icon: typeof Droplets; color: string }[] = [
-  { value: 'water', label: 'Water', icon: Droplets, color: 'text-blue-400 bg-blue-400/10 border-blue-400/20' },
-  { value: 'food', label: 'Food', icon: Wheat, color: 'text-amber-400 bg-amber-400/10 border-amber-400/20' },
-  { value: 'soil', label: 'Soil', icon: Leaf, color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20' },
+  { value: 'water', label: 'Water', icon: Droplets, color: 'type-water' },
+  { value: 'food', label: 'Food', icon: Wheat, color: 'type-food' },
+  { value: 'soil', label: 'Soil', icon: Leaf, color: 'type-soil' },
 ];
 
 export function CreateSampleForm({ isOpen, onClose, onCreated }: CreateSampleFormProps) {
@@ -27,12 +28,9 @@ export function CreateSampleForm({ isOpen, onClose, onCreated }: CreateSampleFor
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Set default assignedTo to current user when opened
   useEffect(() => {
     if (isOpen) {
-      if (user?._id) {
-        setAssignedTo(user._id);
-      }
+      if (user?._id) setAssignedTo(user._id);
       usersApi.listAssignable()
         .then(res => setStaffList(res.data.users))
         .catch(err => console.error('Failed to load assignable staff', err));
@@ -66,130 +64,114 @@ export function CreateSampleForm({ isOpen, onClose, onCreated }: CreateSampleFor
     <AnimatePresence>
       {isOpen && (
         <>
-          <motion.div
+          <motion.button
+            type="button"
+            aria-label="Close new sample form"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+            transition={{ duration: 0.16 }}
+            className="fixed inset-0 z-40 cursor-default bg-black/65 backdrop-blur-sm"
             onClick={onClose}
           />
-          <motion.div
+          <motion.section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="create-sample-title"
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-full w-full max-w-md bg-surface-950 border-l border-surface-800 shadow-2xl z-50 flex flex-col"
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="fixed right-0 top-0 z-50 flex h-[100dvh] w-full max-w-[440px] flex-col border-l border-white/[0.08] bg-surface-950 shadow-2xl shadow-black/30"
           >
-            <div className="flex items-center justify-between p-6 border-b border-surface-800">
-              <div>
-                <h2 className="text-xl font-heading font-semibold text-surface-50">New Sample</h2>
-                <p className="text-sm text-surface-400 mt-0.5">Register and assign a sample for analysis</p>
+            <div className="relative flex items-center justify-between border-b border-white/[0.07] px-5 py-5 sm:px-6">
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary-400/50 to-cyan-300/30" />
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary-300/15 bg-primary-500/10 text-primary-300"><Droplets className="h-5 w-5" /></span>
+                <div>
+                  <h2 id="create-sample-title" className="font-heading text-lg font-semibold text-surface-50">New sample</h2>
+                  <p className="mt-0.5 text-xs text-surface-400">Register a sample for analysis</p>
+                </div>
               </div>
-              <button
-                onClick={onClose}
-                className="text-surface-400 hover:text-surface-100 transition-colors p-2 rounded-lg hover:bg-surface-800"
-              >
-                <X className="w-5 h-5" />
+              <button type="button" aria-label="Close" onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-lg text-surface-400 transition hover:bg-surface-800 hover:text-surface-50 focus-visible:ring-2 focus-visible:ring-primary-500">
+                <X className="h-4 w-4" />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto px-5 py-6 sm:px-6">
               <form id="create-sample-form" onSubmit={handleSubmit} className="space-y-6">
                 {error && (
-                  <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
-                    {error}
+                  <div role="alert" className="flex items-start gap-2.5 rounded-xl border border-status-rejected/20 bg-status-rejected-bg px-3.5 py-3 text-[13px] text-status-rejected">
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />{error}
                   </div>
                 )}
 
                 <div className="space-y-3">
-                  <label className="block text-sm font-medium text-surface-300">
-                    Sample Type *
-                  </label>
-                  <div className="grid grid-cols-3 gap-3">
-                    {SAMPLE_TYPES.map((st) => {
-                      const Icon = st.icon;
-                      const isSelected = type === st.value;
+                  <div>
+                    <label className="block text-[13px] font-semibold text-surface-200">Sample type <span className="text-status-rejected">*</span></label>
+                    <p className="mt-1 text-xs text-surface-500">Choose the material being analyzed.</p>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2.5">
+                    {SAMPLE_TYPES.map((sampleType) => {
+                      const Icon = sampleType.icon;
+                      const isSelected = type === sampleType.value;
                       return (
                         <button
-                          key={st.value}
+                          key={sampleType.value}
                           type="button"
-                          onClick={() => setType(st.value)}
-                          className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
-                            isSelected
-                              ? `${st.color} border-current scale-[1.02]`
-                              : 'border-surface-700 bg-surface-900/50 text-surface-400 hover:border-surface-600 hover:bg-surface-800/50'
-                          }`}
+                          aria-pressed={isSelected}
+                          onClick={() => setType(sampleType.value)}
+                          className={`flex min-h-[92px] flex-col items-center justify-center gap-2 rounded-xl border p-3 transition duration-150 focus-visible:ring-2 focus-visible:ring-primary-500 ${isSelected ? `${sampleType.color} shadow-[0_0_20px_rgba(45,91,255,0.08)]` : 'border-white/[0.08] bg-surface-900 text-surface-400 hover:border-surface-600 hover:bg-surface-850'}`}
                         >
-                          <Icon className="w-6 h-6" />
-                          <span className="text-sm font-medium">{st.label}</span>
+                          <Icon className="h-5 w-5" />
+                          <span className="text-xs font-semibold">{sampleType.label}</span>
                         </button>
                       );
                     })}
                   </div>
                 </div>
 
-                {/* Assigned To Selection */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-surface-300 flex items-center justify-between">
-                    <span className="flex items-center gap-1.5">
-                      <UserCheck className="w-4 h-4 text-primary-400" />
-                      Assigned To (Lab Personnel)
-                    </span>
-                    <span className="text-xs text-surface-500 font-normal">Optional</span>
+                <div className="space-y-2.5">
+                  <label htmlFor="sample-assigned-to" className="flex items-center justify-between text-[13px] font-semibold text-surface-200">
+                    <span className="flex items-center gap-2"><UserCheck className="h-4 w-4 text-primary-300" />Assigned to</span>
+                    <span className="text-[11px] font-normal text-surface-500">Optional</span>
                   </label>
-                  <select
-                    value={assignedTo}
-                    onChange={(e) => setAssignedTo(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-surface-900 border border-surface-700 rounded-xl text-surface-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    {user?._id && (
-                      <option value={user._id}>
-                        Assign to me ({user.name}) — Current User
-                      </option>
-                    )}
+                  <select id="sample-assigned-to" value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} className="ui-select">
+                    {user?._id && <option value={user._id}>Assign to me ({user.name}) — Current User</option>}
                     <option value="">Unassigned (Queue for Triage)</option>
-                    {staffList
-                      .filter(s => s._id !== user?._id)
-                      .map((staff) => (
-                        <option key={staff._id} value={staff._id}>
-                          {staff.name} ({staff.role.charAt(0).toUpperCase() + staff.role.slice(1)}) — {staff.email}
-                        </option>
-                      ))}
+                    {staffList.filter(staff => staff._id !== user?._id).map((staff) => (
+                      <option key={staff._id} value={staff._id}>{staff.name} ({staff.role.charAt(0).toUpperCase() + staff.role.slice(1)}) — {staff.email}</option>
+                    ))}
                   </select>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-surface-300">
-                    Initial Notes
-                    <span className="text-surface-500 font-normal ml-1">(optional)</span>
+                <div className="space-y-2.5">
+                  <label htmlFor="sample-initial-notes" className="flex items-center justify-between text-[13px] font-semibold text-surface-200">
+                    Initial notes <span className="text-[11px] font-normal text-surface-500">Optional</span>
                   </label>
                   <textarea
+                    id="sample-initial-notes"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Add initial observations, conditions, or instructions..."
-                    rows={4}
+                    placeholder="Add observations, conditions, or instructions..."
+                    rows={5}
                     maxLength={1000}
-                    className="w-full bg-surface-900 border border-surface-700 text-surface-50 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none placeholder:text-surface-500"
+                    className="ui-input min-h-32 resize-y leading-5 placeholder:text-surface-500"
                   />
-                  <p className="text-xs text-surface-500 text-right">{notes.length}/1000</p>
+                  <p className="text-right text-[11px] text-surface-500 tabular-nums">{notes.length}/1000</p>
                 </div>
               </form>
             </div>
 
-            <div className="p-6 border-t border-surface-800 bg-surface-900/50">
-              <button
-                type="submit"
-                form="create-sample-form"
-                disabled={isSubmitting}
-                className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-500 text-white py-3 px-4 rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary-600/20 hover:shadow-primary-500/30 hover:-translate-y-0.5 active:translate-y-0"
-              >
-                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Create Sample'}
-              </button>
+            <div className="border-t border-white/[0.07] bg-surface-900/75 px-5 py-4 sm:px-6">
+              <Button type="submit" form="create-sample-form" disabled={isSubmitting} className="w-full">
+                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Droplets className="h-4 w-4" />Create sample</>}
+              </Button>
+              <p className="mt-2 text-center text-[10px] text-surface-500">Sample details can be updated from its record.</p>
             </div>
-          </motion.div>
+          </motion.section>
         </>
       )}
     </AnimatePresence>
   );
 }
-

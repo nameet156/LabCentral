@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Plus, LayoutDashboard } from 'lucide-react';
+import { ArrowRight, FlaskConical, Plus, Sparkles } from 'lucide-react';
 import { KanbanBoard } from '@/components/kanban/KanbanBoard';
 import { CreateSampleForm } from '@/components/samples/CreateSampleForm';
 import { useToast } from '@/components/ui/Toast';
 import { useAuth } from '@/context/AuthContext';
 import { samplesApi, type Sample, type SampleStatus } from '@/api/samples.api';
+import { Badge, Button, Card, Skeleton } from '@/components/ui/primitives';
 
 export default function DashboardPage() {
   const [samples, setSamples] = useState<Sample[]>([]);
@@ -33,17 +34,14 @@ export default function DashboardPage() {
   }, [fetchSamples]);
 
   const handleStatusChange = async (sampleId: string, newStatus: SampleStatus, version: number) => {
-    // Optimistic update
     const previousSamples = [...samples];
     setSamples(prev => prev.map(s => s._id === sampleId ? { ...s, status: newStatus } : s));
 
     try {
       const res = await samplesApi.updateStatus(sampleId, { status: newStatus, version });
-      // Update with server response (e.g., new version)
       setSamples(prev => prev.map(s => s._id === sampleId ? res.data.sample : s));
       toast.success('Status updated successfully');
     } catch (err: any) {
-      // Revert on error
       setSamples(previousSamples);
       toast.error(err.response?.data?.error || 'Failed to update status');
     }
@@ -60,56 +58,57 @@ export default function DashboardPage() {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
-      className="h-full flex flex-col pt-6 px-8 pb-8"
+      transition={{ duration: 0.18 }}
+      className="flex min-h-[calc(100vh-116px)] flex-col gap-5 pb-1"
     >
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-heading font-bold text-surface-50 flex items-center gap-3">
-            <LayoutDashboard className="w-8 h-8 text-primary-500" />
-            Sample Tracker
-          </h1>
-          <p className="text-surface-400 mt-1">Drag samples between columns to update their workflow status</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3.5">
+          <div className="hidden h-12 w-12 items-center justify-center rounded-2xl border border-primary-300/15 bg-gradient-to-br from-primary-500/20 to-cyan-400/10 text-primary-300 shadow-[0_0_28px_rgba(45,91,255,0.12)] sm:flex">
+            <FlaskConical className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h1 className="font-heading text-[26px] font-semibold tracking-tight text-surface-50 sm:text-[30px]">Sample Tracker</h1>
+              {!isLoading && <Badge tone="blue" className="font-mono tabular-nums">{samples.length} total</Badge>}
+            </div>
+            <p className="mt-1 text-[13px] text-surface-400">Follow every sample through the laboratory workflow.</p>
+          </div>
         </div>
 
         {canCreateSample && (
-          <button
-            onClick={() => setIsCreateFormOpen(true)}
-            className="flex items-center gap-2 bg-primary-600 hover:bg-primary-500 text-white py-2.5 px-5 rounded-xl font-medium transition-all shadow-lg hover:shadow-primary-500/25 hover:-translate-y-0.5"
-          >
-            <Plus className="w-5 h-5" />
-            New Sample
-          </button>
+          <Button onClick={() => setIsCreateFormOpen(true)} className="w-full sm:w-auto">
+            <Plus className="h-4 w-4" />
+            New sample
+          </Button>
         )}
       </div>
 
-      <div className="flex-1 min-h-0 bg-surface-950/30 rounded-3xl p-6 border border-surface-800/50">
+      <Card className="relative flex min-h-[520px] flex-1 flex-col overflow-hidden rounded-2xl bg-surface-950/35 p-3 sm:p-4">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary-400/30 to-transparent" />
         {isLoading ? (
-          <div className="flex gap-6 h-full overflow-x-hidden">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="w-[320px] min-w-[320px] h-full flex flex-col gap-4">
-                <div className="h-14 bg-surface-900 rounded-2xl animate-pulse" />
-                <div className="h-32 bg-surface-900/50 rounded-2xl animate-pulse" />
-                <div className="h-32 bg-surface-900/50 rounded-2xl animate-pulse" />
+          <div className="flex h-full min-h-[490px] gap-3 overflow-x-hidden">
+            {[1, 2, 3, 4, 5].map((column) => (
+              <div key={column} className="flex w-[280px] min-w-[280px] flex-col gap-3 rounded-xl border border-white/[0.06] bg-surface-900/60 p-3">
+                <Skeleton className="h-11 w-full rounded-lg" />
+                <Skeleton className="h-28 w-full rounded-xl" />
+                <Skeleton className="h-28 w-full rounded-xl" />
+                {column % 2 === 0 && <Skeleton className="h-28 w-full rounded-xl" />}
               </div>
             ))}
           </div>
         ) : samples.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center">
-            <div className="w-24 h-24 bg-surface-900 rounded-full flex items-center justify-center mb-6">
-              <LayoutDashboard className="w-10 h-10 text-surface-500" />
+          <div className="flex min-h-[480px] flex-1 flex-col items-center justify-center px-6 py-12 text-center">
+            <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-primary-300/15 bg-gradient-to-br from-primary-500/15 to-cyan-400/10 text-primary-300">
+              <Sparkles className="h-7 w-7" />
             </div>
-            <h3 className="text-xl font-heading font-semibold text-surface-50 mb-2">No Samples Yet</h3>
-            <p className="text-surface-400 max-w-sm mb-8">
-              No samples registered yet. Create your first sample to begin tracking.
-            </p>
+            <h2 className="font-heading text-xl font-semibold text-surface-50">Your sample queue is ready</h2>
+            <p className="mt-2 max-w-sm text-sm leading-6 text-surface-400">When samples are registered, you can track assignments and workflow progress here.</p>
             {canCreateSample && (
-              <button
-                onClick={() => setIsCreateFormOpen(true)}
-                className="flex items-center gap-2 bg-surface-800 hover:bg-surface-700 text-surface-100 py-2.5 px-5 rounded-xl font-medium transition-colors"
-              >
-                <Plus className="w-5 h-5" />
-                Create First Sample
-              </button>
+              <Button onClick={() => setIsCreateFormOpen(true)} className="mt-6">
+                <Plus className="h-4 w-4" />
+                Create your first sample
+                <ArrowRight className="h-4 w-4" />
+              </Button>
             )}
           </div>
         ) : (
@@ -119,7 +118,7 @@ export default function DashboardPage() {
             onCardClick={handleCardClick}
           />
         )}
-      </div>
+      </Card>
 
       <CreateSampleForm
         isOpen={isCreateFormOpen}
