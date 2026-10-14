@@ -1024,6 +1024,14 @@ Implemented in [`sample.service.js`](file:///Users/nameet/156/Projects/lims/serv
 - Extracts the numeric suffix, increments by 1, and zero-pads to 5 digits.
 - The unique database index on `sampleCode` acts as the final guard against duplicate generation.
 
+### 5. Staff Assignment and Delegation Logic ([`sample.service.js`](file:///Users/nameet/156/Projects/lims/server/src/services/sample.service.js))
+- Samples can be assigned upon intake via `createSample()` or dynamically reassigned via `assignSample()`.
+- **Validation**:
+  - The `assignedTo` field accepts a 24-character hexadecimal ObjectId or `null` (representing an unassigned sample in the intake triage queue).
+  - If a non-null ID is provided, the service verifies that the target user document exists in the `users` collection prior to persisting.
+  - Role-based authorization (`authorize('admin', 'technician')`) ensures read-only viewers cannot reassign samples.
+- **Roster Exposure**: The `GET /api/users/assignable` endpoint exposes a stripped projection (`_id`, `name`, `email`, `role`) sorted alphabetically, allowing client-side assignment dropdowns to populate without leaking sensitive account records.
+
 ---
 
 ## 11 — Error Handling
@@ -1231,6 +1239,14 @@ JWT_EXPIRES_IN=7d
 - **Decision**: Enforce schema validation via a reusable middleware factory (`validate(schema)`).
 - **Rationale**: Keeps controllers thin and focused purely on HTTP request/response orchestration. Malformed payloads are rejected at the application boundary before any controller or database logic executes.
 
+### 6. Custom Design System Primitives vs. Heavy UI Frameworks
+- **Decision**: Build bespoke component primitives (`primitives.tsx`) combining Tailwind CSS v4 and Framer Motion rather than adopting heavyweight component suites (e.g., Material UI, Ant Design, or full component libraries).
+- **Rationale**: Third-party component suites introduce bundle bloat, opinionated styling overrides, and complex dependency trees. Bespoke primitives provide complete control over animation physics, accessibility landmarks (`aria-modal`, `role="dialog"`), spring tuning, and glassmorphic surface styling while keeping bundle size negligible.
+
+### 7. Dual-Theme Architecture with Inverted Surface Tokens
+- **Decision**: Implement dark and light mode via CSS custom properties and high-contrast surface tokens rather than duplicating Tailwind class strings on every component.
+- **Rationale**: By defining surface tokens (`--color-surface-900`, `--color-surface-800`, `--app-border`, `--app-shadow`) at the `:root` and `html.light` level, components remain completely decoupled from theme logic. Toggling a single HTML class instantly recalculates ambient lighting and contrast across the entire DOM tree without triggering component re-renders.
+
 ---
 
 ## 16 — Known Limitations
@@ -1324,11 +1340,19 @@ JWT_EXPIRES_IN=7d
 > 3. **Asynchronous Processing**: Introduce a message queue (BullMQ + Redis) for non-critical side effects like notifications or audit log streaming.
 > 4. **Caching Layer**: Cache assignable staff lists and aggregate analytics in Redis with cache invalidation on mutations to decrease primary database read load.
 
+**Q7: How does LabCentral implement micro-interactions like `MagneticButton` and `CursorGlow` without degrading performance or violating accessibility standards?**
+> *Answer*: Micro-interactions are grounded in two critical guardrails:
+> 1. **Accessibility**: The entire application is wrapped in `<MotionConfig reducedMotion="user">`, and components like `MagneticButton` and `CursorGlow` explicitly query `useReducedMotion()`. If the user's operating system requests reduced motion, spring transforms and physics are immediately suppressed. Additionally, touch screens are detected via `(pointer: coarse)` media queries, disabling pointer tracking that would otherwise waste battery on mobile devices.
+> 2. **Performance**: Animations do not trigger React re-renders. Instead, they use Framer Motion's `useMotionValue` and `useSpring`, which mutate hardware-accelerated CSS properties (`transform: translate3d`) directly on the GPU composite thread.
+
+**Q8: How does the staff assignment and delegation workflow function across the stack?**
+> *Answer*: When a sample is created, technicians can assign it immediately or leave it unassigned. The personnel dropdown fetches active lab members via `GET /api/users/assignable`, which is accessible to all authenticated staff. On `SampleDetailPage`, operators can reassign the sample dynamically via `PATCH /api/samples/:id/assign`. The backend guards this route via `authorize('admin', 'technician')`, validates the target `assignedTo` ObjectId, verifies that the user exists in MongoDB, updates the document, and returns the populated user reference to instantly refresh the UI badge.
+
 ---
 
 ## 19 — Hands-on Exercises
 
-To master this codebase, implement these four hands-on exercises:
+To master this codebase, implement these five hands-on exercises:
 
 ### Exercise 1: Add a Priority Field to Samples
 1. **Model** ([`Sample.js`](file:///Users/nameet/156/Projects/lims/server/src/models/Sample.js)): Add `priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' }`.
@@ -1358,6 +1382,12 @@ To master this codebase, implement these four hands-on exercises:
    - `validateTransition('received', 'in_progress').valid === true`
    - `validateTransition('received', 'completed').valid === false`
    - `validateTransition('completed', 'received').valid === false` (terminal state)
+
+### Exercise 5: Extend the Design System with a Status Indicator Pulse Badge
+1. In `client/src/components/ui/primitives.tsx`, export a new `StatusPulse` component accepting `status: SampleStatus` and `label: string`.
+2. Map statuses to ping animations: e.g., `in_progress` renders a pulsing blue ring (`animate-ping bg-blue-400`).
+3. Replace the plain status badges on `SampleCard.tsx` with `<StatusPulse status={sample.status} label={formatStatus(sample.status)} />`.
+4. Ensure the ping animation is disabled when `useReducedMotion()` is true.
 
 ---
 
