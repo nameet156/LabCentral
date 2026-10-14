@@ -84,11 +84,28 @@ const getAuditLog = async (req, res, next) => {
   }
 };
 
+/**
+ * PATCH /api/samples/:id/assign
+ */
+const assignSample = async (req, res, next) => {
+  try {
+    const sample = await sampleService.assignSample({
+      sampleId: req.params.id,
+      assignedTo: req.body.assignedTo,
+      userId: req.userId,
+    });
+    res.json({ sample });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createSample,
   listSamples,
   getSampleById,
   updateSampleStatus,
   addNote,
+  assignSample,
   getAuditLog,
 };

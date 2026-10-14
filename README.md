@@ -145,11 +145,19 @@ Every API input is validated using Zod schemas before reaching the controller. T
 
 Three roles with different capabilities:
 
-| Role         | Can Create Samples | Can Change Status | Can View | Can Add Notes |
-|-------------|-------------------|------------------|---------|--------------|
-| `admin`      | ✅                 | ✅                | ✅       | ✅            |
-| `technician` | ✅                 | ✅                | ✅       | ✅            |
-| `viewer`     | ❌                 | ❌                | ✅       | ❌            |
+| Role         | Can Create Samples | Can Change Status | Can View | Can Add Notes | Can Manage Users |
+|-------------|-------------------|------------------|---------|--------------|------------------|
+| `admin`      | ✅                 | ✅                | ✅       | ✅            | ✅                |
+| `technician` | ✅                 | ✅                | ✅       | ✅            | ❌                |
+| `viewer`     | ❌                 | ❌                | ✅       | ❌            | ❌                |
+
+### 6. Modern Design System & Ambient Micro-Interactions
+
+The application features a bespoke design system built on React 19, Tailwind CSS v4, and Framer Motion:
+- **Component Primitives (`primitives.tsx`)**: Accessible `Button`, `MagneticButton` (spring physics cursor attraction), `SpotlightCard` (cursor-following radial spotlight), `Card`, `Input`, `Select`, `Badge`, `Modal`, and `Skeleton`.
+- **Dual-Theme Dark/Light Architecture**: Built with CSS custom variables and high-contrast tokens, switchable via an interactive theme toggle in the topbar and persisted in `localStorage`.
+- **Ambient Micro-Interactions**: Ambient cursor tracking (`CursorGlow.tsx`) with automatic reduction on touch/coarse pointers and users requesting reduced motion via `<MotionConfig reducedMotion="user">`.
+- **Collapsible Navigation**: Responsive collapsible sidebar (256px expanded / 76px collapsed) and floating glassmorphic topbar.
 
 ---
 
@@ -264,10 +272,10 @@ lims/
 │   ├── src/
 │   │   ├── api/                     # Axios instance + typed API functions
 │   │   ├── components/
-│   │   │   ├── ui/                  # Toast notifications
-│   │   │   ├── layout/              # Sidebar, Topbar, AppLayout
+│   │   │   ├── ui/                  # Toast, CursorGlow, primitives (Button, Card, Modal, Input, Badge)
+│   │   │   ├── layout/              # Collapsible Sidebar, floating Topbar, AppLayout
 │   │   │   ├── kanban/              # KanbanBoard, KanbanColumn, SampleCard
-│   │   │   ├── samples/             # AuditTimeline, NotesSection, CreateForm
+│   │   │   ├── samples/             # AuditTimeline, NotesSection, CreateSampleForm
 │   │   │   └── reports/             # StatCard, Charts
 │   │   ├── context/                 # AuthContext (JWT management)
 │   │   ├── pages/                   # Route-level page components
@@ -299,8 +307,18 @@ lims/
 | GET    | `/api/samples/:id`            | Yes  | All               | Includes populated references + audit log|
 | POST   | `/api/samples`                | Yes  | admin, technician | Body: `{ type, assignedTo?, notes? }`    |
 | PATCH  | `/api/samples/:id/status`     | Yes  | admin, technician | Body: `{ status, version }`              |
+| PATCH  | `/api/samples/:id/assign`     | Yes  | admin, technician | Body: `{ assignedTo }`                   |
 | POST   | `/api/samples/:id/notes`      | Yes  | admin, technician | Body: `{ text }`                         |
 | GET    | `/api/samples/:id/audit-log`  | Yes  | All               | Chronological audit entries              |
+
+### User Management Endpoints
+
+| Method | Endpoint               | Auth | Role  | Notes                                            |
+|--------|------------------------|------|-------|--------------------------------------------------|
+| GET    | `/api/users/assignable`| Yes  | All   | Returns list of active staff for assignment      |
+| GET    | `/api/users`           | Yes  | admin | Full registered user list with roles & dates     |
+| PATCH  | `/api/users/:id`       | Yes  | admin | Modify user role or name                         |
+| DELETE | `/api/users/:id`       | Yes  | admin | Delete user (protected against self-deletion)    |
 
 ### Reports Endpoint
 

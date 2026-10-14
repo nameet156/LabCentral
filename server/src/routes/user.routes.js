@@ -7,8 +7,13 @@ const { updateUserSchema } = require('../validators/user.validator');
 
 const router = express.Router();
 
-// All user management routes require authentication and admin role
+// All user routes require authentication
 router.use(auth);
+
+// GET /api/users/assignable — Accessible to all authenticated users for sample assignment
+router.get('/assignable', userController.listAssignableUsers);
+
+// Admin-only user management routes
 router.use(authorize('admin'));
 
 // GET /api/users — List all users
@@ -21,3 +26,4 @@ router.patch('/:id', validate(updateUserSchema), userController.updateUser);
 router.delete('/:id', userController.deleteUser);
 
 module.exports = router;
+

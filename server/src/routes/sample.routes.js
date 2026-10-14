@@ -7,6 +7,7 @@ const {
   createSampleSchema,
   updateStatusSchema,
   addNoteSchema,
+  assignSampleSchema,
   listSamplesQuerySchema,
 } = require('../validators/sample.validator');
 
@@ -35,6 +36,14 @@ router.patch(
   authorize('admin', 'technician'),
   validate(updateStatusSchema),
   sampleController.updateSampleStatus
+);
+
+// PATCH /api/samples/:id/assign — only admin and technician can assign/reassign
+router.patch(
+  '/:id/assign',
+  authorize('admin', 'technician'),
+  validate(assignSampleSchema),
+  sampleController.assignSample
 );
 
 // POST /api/samples/:id/notes — all authenticated users can add notes

@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] — 2026-10-14
+
+### 🎨 UI Redesign & Modern Design System
+
+- **Bespoke UI Component Primitives** (`client/src/components/ui/primitives.tsx`):
+  - **`MagneticButton`**: Physics-based cursor attraction button with spring motion (`useSpring`, stiffness: 260, damping: 18) and reduced-motion fallback.
+  - **`SpotlightCard`**: Interactive cursor-following radial spotlight illumination (`--spot-x`, `--spot-y`) with smooth elevation transitions.
+  - **Core Primitives**: Reusable, accessible `Card`, `Button` (primary, secondary, ghost, danger), `Input`, `Select`, `Badge` (neutral, blue, cyan, success, warning, danger), `Modal` with focus and escape key management, and `Skeleton` loaders.
+- **Ambient Cursor Interaction** (`CursorGlow.tsx`):
+  - Fluid, spring-damped ambient cursor glow tracking pointer movement, disabled automatically for touch devices and users preferring reduced motion.
+- **Dark & Light Mode Theming**:
+  - Full dual-theme architecture powered by CSS custom properties and Tailwind CSS v4 color tokens with persistent `localStorage` (`lims_theme`) synchronization.
+  - Interactive theme toggle with Sun/Moon icons in the topbar.
+- **Collapsible Navigation & Workspace**:
+  - Desktop sidebar supports smooth animated width toggling (256px expanded / 76px collapsed) with icon tooltips and spring layout transitions.
+  - Floating pill-shaped topbar featuring active route breadcrumbs, theme switcher, and user avatar chip.
+  - Full-screen responsive mobile navigation drawer with backdrop blur.
+- **Accessibility & Motion Hardening**:
+  - Wrapped root in `<MotionConfig reducedMotion="user">` to automatically disable intense transforms and spring animations for users with vestibular sensitivities.
+  - Upgraded focus rings, ARIA roles (`role="dialog"`, `aria-modal="true"`, `aria-label`), and contrast ratios across all states.
+- **View Modernization**:
+  - Refactored `DashboardPage`, `KanbanBoard`, `SampleDetailPage`, `ReportsPage`, `UsersPage`, `LoginPage`, and `RegisterPage` to adopt the new primitives and design language.
+
+---
+
+## [1.0.4] — 2026-08-24
+
+### ✨ Added
+
+- **Sample Assignment & Reassignment Workflow**:
+  - **Assignable Staff API**: Added `GET /api/users/assignable` accessible to all authenticated technicians and administrators to retrieve active laboratory personnel.
+  - **Assignment on Sample Creation**: Added an "Assigned To" staff selection menu in `CreateSampleForm` defaulting to the current user with options to delegate to any laboratory staff member or place in the unassigned triage queue.
+  - **Dynamic Sample Reassignment**: Added interactive reassignment controls directly on the `SampleDetailPage` (`PATCH /api/samples/:id/assign`), allowing technicians and admins to transfer sample ownership and testing responsibilities in real-time.
+
+---
+
 ## [1.0.3] — 2026-08-24
 
 ### ✨ Added

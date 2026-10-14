@@ -1,12 +1,16 @@
 import { useAuth } from '@/context/AuthContext';
-import { LogOut, Sun, Moon, Menu, Activity, LayoutDashboard, BarChart3, Users } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { BarChart3, ChevronDown, LayoutDashboard, LogOut, Menu, Moon, Sun, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
-export default function Topbar() {
+interface TopbarProps {
+  onToggleSidebar: () => void;
+  onOpenMobileNav: () => void;
+}
+
+export default function Topbar({ onToggleSidebar, onOpenMobileNav }: TopbarProps) {
   const { user, logout } = useAuth();
   const [isDark, setIsDark] = useState(true);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -15,111 +19,70 @@ export default function Topbar() {
       setIsDark(false);
       document.documentElement.classList.add('light');
       document.documentElement.classList.remove('dark');
+    } else {
+      document.documentElement.classList.remove('light');
+      document.documentElement.classList.add('dark');
     }
   }, []);
-
-  useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [location.pathname]);
 
   const toggleTheme = () => {
     const next = !isDark;
     setIsDark(next);
-    if (next) {
-      document.documentElement.classList.remove('light');
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('lims_theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.classList.add('light');
-      localStorage.setItem('lims_theme', 'light');
-    }
+    document.documentElement.classList.toggle('light', !next);
+    document.documentElement.classList.toggle('dark', next);
+    localStorage.setItem('lims_theme', next ? 'dark' : 'light');
   };
 
+  const page = location.pathname.startsWith('/reports')
+    ? { title: 'Reports', icon: BarChart3 }
+    : location.pathname.startsWith('/users')
+      ? { title: 'User management', icon: Users }
+      : { title: 'Sample tracker', icon: LayoutDashboard };
+  const PageIcon = page.icon;
+
   const roleColors: Record<string, string> = {
-    admin: 'bg-primary-600/20 text-primary-400',
-    technician: 'bg-status-in-progress/20 text-status-in-progress',
-    viewer: 'bg-surface-600/30 text-surface-300',
+    admin: 'bg-primary-500/15 text-primary-300',
+    technician: 'bg-status-in-progress-bg text-status-in-progress',
+    viewer: 'bg-surface-700/50 text-surface-300',
   };
 
   return (
-    <>
-      <header className="sticky top-0 h-16 bg-surface-900/80 backdrop-blur-xl border-b border-surface-800 flex items-center justify-between px-6 z-20
-                          max-md:px-4">
-        {/* Mobile menu toggle */}
-        <button
-          className="md:hidden p-2 -ml-2 text-surface-400 hover:text-surface-200"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          <Menu className="w-5 h-5" />
+    <header className="sticky top-3 z-20 mx-4 flex h-14 items-center justify-between rounded-2xl border border-white/[0.08] bg-surface-900/85 px-3 shadow-[0_12px_32px_rgba(0,0,0,0.16)] backdrop-blur-2xl sm:mx-6 sm:px-4 max-md:top-2 max-md:mx-3">
+      <div className="flex min-w-0 items-center gap-2">
+        <button type="button" aria-label="Open navigation menu" onClick={onOpenMobileNav} className="flex h-9 w-9 items-center justify-center rounded-xl text-surface-300 transition hover:bg-surface-800 hover:text-surface-50 md:hidden">
+          <Menu className="h-[18px] w-[18px]" />
         </button>
-
-        {/* Mobile logo */}
-        <div className="md:hidden flex items-center gap-2">
-          <Activity className="w-5 h-5 text-primary-400" />
-          <span className="font-heading font-bold text-sm">LabCentral</span>
-        </div>
-
-        {/* Left spacer for desktop */}
-        <div className="max-md:hidden" />
-
-        {/* Right section */}
-        <div className="flex items-center gap-3">
-          {/* Theme toggle */}
-          <button
-            onClick={toggleTheme}
-            className="p-2 rounded-lg text-surface-400 hover:text-surface-200 hover:bg-surface-800 transition-colors"
-            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-          >
-            {isDark ? <Sun className="w-4.5 h-4.5" /> : <Moon className="w-4.5 h-4.5" />}
-          </button>
-
-          {/* User info */}
-          <div className="flex items-center gap-3 pl-3 border-l border-surface-700">
-            <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-white text-sm font-semibold">
-              {user?.name?.charAt(0).toUpperCase()}
-            </div>
-            <div className="max-sm:hidden">
-              <p className="text-sm font-medium text-surface-200 leading-tight">{user?.name}</p>
-              <span className={`inline-block text-[10px] font-medium px-1.5 py-0.5 rounded-full mt-0.5 ${roleColors[user?.role || 'viewer']}`}>
-                {user?.role}
-              </span>
-            </div>
-            <button
-              onClick={logout}
-              className="p-2 rounded-lg text-surface-400 hover:text-red-400 hover:bg-red-400/10 transition-colors"
-              title="Log out"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
+        <button type="button" aria-label="Collapse or expand sidebar" title="Collapse or expand sidebar" onClick={onToggleSidebar} className="hidden h-9 w-9 items-center justify-center rounded-xl text-surface-400 transition hover:bg-surface-800 hover:text-surface-50 md:flex">
+          <Menu className="h-[18px] w-[18px]" />
+        </button>
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary-500/10 text-primary-300 md:hidden"><PageIcon className="h-4 w-4" /></span>
+          <div className="min-w-0">
+            <p className="truncate text-[13px] font-semibold text-surface-100">{page.title}</p>
+            <p className="hidden text-[10px] text-surface-500 sm:block">Laboratory operations</p>
           </div>
         </div>
-      </header>
+      </div>
 
-      {/* Mobile nav overlay */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-40 md:hidden" onClick={() => setMobileMenuOpen(false)}>
-          <div className="absolute inset-0 bg-black/50" />
-          <nav className="absolute left-0 top-0 h-full w-64 bg-surface-900 border-r border-surface-800 p-4 pt-20 space-y-1"
-               onClick={(e) => e.stopPropagation()}>
-            <NavLink to="/" className={({ isActive }) => `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
-              ${isActive ? 'text-primary-400 bg-primary-600/15' : 'text-surface-400 hover:text-surface-200 hover:bg-surface-800/50'}`}>
-              <LayoutDashboard className="w-5 h-5" /> Dashboard
-            </NavLink>
-            <NavLink to="/reports" className={({ isActive }) => `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
-              ${isActive ? 'text-primary-400 bg-primary-600/15' : 'text-surface-400 hover:text-surface-200 hover:bg-surface-800/50'}`}>
-              <BarChart3 className="w-5 h-5" /> Reports
-            </NavLink>
-            {user?.role === 'admin' && (
-              <NavLink to="/users" className={({ isActive }) => `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
-                ${isActive ? 'text-primary-400 bg-primary-600/15' : 'text-surface-400 hover:text-surface-200 hover:bg-surface-800/50'}`}>
-                <Users className="w-5 h-5" /> Users
-              </NavLink>
-            )}
-          </nav>
+      <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+        <button type="button" onClick={toggleTheme} aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'} title={isDark ? 'Switch to light mode' : 'Switch to dark mode'} className="flex h-9 w-9 items-center justify-center rounded-xl text-surface-300 transition hover:bg-surface-800 hover:text-primary-300 focus-visible:ring-2 focus-visible:ring-primary-500">
+          {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+        </button>
+        <div className="mx-1 h-6 w-px bg-surface-700" />
+        <div className="flex items-center gap-2.5 rounded-xl px-1.5 py-1">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary-300/20 bg-gradient-to-br from-primary-500 to-cyan-600 text-xs font-bold text-white shadow-[0_0_18px_rgba(45,91,255,0.18)]">
+            {user?.name?.charAt(0).toUpperCase()}
+          </div>
+          <div className="hidden min-w-0 sm:block">
+            <p className="max-w-32 truncate text-xs font-medium leading-tight text-surface-100">{user?.name}</p>
+            <span className={`mt-1 inline-flex rounded-full px-1.5 py-0.5 text-[9px] font-semibold capitalize ${roleColors[user?.role || 'viewer']}`}>{user?.role}</span>
+          </div>
+          <ChevronDown className="hidden h-3.5 w-3.5 text-surface-500 sm:block" />
         </div>
-      )}
-    </>
+        <button type="button" onClick={logout} aria-label="Log out" title="Log out" className="flex h-9 w-9 items-center justify-center rounded-xl text-surface-400 transition hover:bg-status-rejected-bg hover:text-status-rejected focus-visible:ring-2 focus-visible:ring-status-rejected">
+          <LogOut className="h-4 w-4" />
+        </button>
+      </div>
+    </header>
   );
 }
-

@@ -8,6 +8,7 @@ export interface ManagedUser extends User {
 
 export const usersApi = {
   list: () => api.get<{ users: ManagedUser[] }>('/users'),
+  listAssignable: () => api.get<{ users: Pick<User, '_id' | 'name' | 'email' | 'role'>[] }>('/users/assignable'),
   update: (id: string, data: { name?: string; role?: 'admin' | 'technician' | 'viewer' }) =>
     api.patch<{ user: ManagedUser }>(`/users/${id}`, data),
   delete: (id: string) =>
