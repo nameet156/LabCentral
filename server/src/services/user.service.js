@@ -76,8 +76,20 @@ const deleteUser = async ({ userId, currentAdminId }) => {
   return { success: true, message: `User '${user.name}' (${user.email}) deleted successfully.` };
 };
 
+/**
+ * List all users available for sample assignment (accessible to staff).
+ */
+const listAssignableUsers = async () => {
+  const users = await User.find()
+    .select('_id name email role')
+    .sort({ name: 1 });
+
+  return users;
+};
+
 module.exports = {
   listUsers,
+  listAssignableUsers,
   updateUser,
   deleteUser,
 };

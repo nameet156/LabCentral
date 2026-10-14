@@ -1,0 +1,15 @@
+cd /Users/nameet/156/Projects/lims/server && npm run dev
+cd /Users/nameet/156/Projects/lims/client && npm run dev
+cd /Users/nameet/156/Projects/lims/server && node seed.js
+
+
+
+
+
+
+
+
+a@admin.in 123123
+b@tech.in 123123
+c@user.in 123123
+

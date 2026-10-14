@@ -251,11 +251,45 @@ const getAuditLog = async (sampleId) => {
   return auditLog;
 };
 
+/**
+ * Assign or reassign a sample to a particular staff member.
+ */
+const assignSample = async ({ sampleId, assignedTo }) => {
+  const sample = await Sample.findById(sampleId);
+  if (!sample) {
+    const error = new Error('Sample not found.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (assignedTo) {
+    const User = require('../models/User');
+    const targetUser = await User.findById(assignedTo);
+    if (!targetUser) {
+      const error = new Error('Assigned staff member not found.');
+      error.statusCode = 404;
+      throw error;
+    }
+  }
+
+  sample.assignedTo = assignedTo || null;
+  await sample.save();
+
+  await sample.populate([
+    { path: 'createdBy', select: 'name email role' },
+    { path: 'assignedTo', select: 'name email role' },
+    { path: 'notes.author', select: 'name email' },
+  ]);
+
+  return sample;
+};
+
 module.exports = {
   createSample,
   listSamples,
   getSampleById,
   updateSampleStatus,
   addNote,
+  assignSample,
   getAuditLog,
 };

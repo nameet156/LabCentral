@@ -44,8 +44,21 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
+/**
+ * GET /api/users/assignable
+ */
+const listAssignableUsers = async (req, res, next) => {
+  try {
+    const users = await userService.listAssignableUsers();
+    res.json({ users });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   listUsers,
+  listAssignableUsers,
   updateUser,
   deleteUser,
 };

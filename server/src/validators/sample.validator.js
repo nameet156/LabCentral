@@ -48,9 +48,18 @@ const listSamplesQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });
 
+const assignSampleSchema = z.object({
+  assignedTo: z
+    .string()
+    .regex(/^[0-9a-fA-F]{24}$/, 'assignedTo must be a valid ObjectId')
+    .nullable()
+    .optional(),
+});
+
 module.exports = {
   createSampleSchema,
   updateStatusSchema,
   addNoteSchema,
+  assignSampleSchema,
   listSamplesQuerySchema,
 };
