@@ -27,8 +27,8 @@ A full-stack **MERN** application for tracking laboratory sample workflows. Buil
 ┌─────────────────────────────────────────────────────────────┐
 │                    React (Vite) Frontend                    │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌───────────┐    │
-│  │  Login/   │  │  Kanban  │  │  Sample  │  │  Reports  │   │
-│  │ Register  │  │Dashboard │  │  Detail  │  │   Page    │   │
+│  │  Login/  │  │  Kanban  │  │  Sample  │  │  Reports  │    │
+│  │ Register │  │Dashboard │  │  Detail  │  │   Page    │    │
 │  └──────────┘  └──────────┘  └──────────┘  └───────────┘    │
 │            ↕ Axios (JWT in Authorization header)            │
 ├─────────────────────────────────────────────────────────────┤
