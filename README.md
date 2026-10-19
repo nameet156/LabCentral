@@ -26,24 +26,24 @@ A full-stack **MERN** application for tracking laboratory sample workflows. Buil
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    React (Vite) Frontend                    │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌───────────┐  │
-│  │  Login/   │  │  Kanban  │  │  Sample  │  │  Reports  │  │
-│  │ Register  │  │Dashboard │  │  Detail  │  │   Page    │  │
-│  └──────────┘  └──────────┘  └──────────┘  └───────────┘  │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌───────────┐    │
+│  │  Login/   │  │  Kanban  │  │  Sample  │  │  Reports  │   │
+│  │ Register  │  │Dashboard │  │  Detail  │  │   Page    │   │
+│  └──────────┘  └──────────┘  └──────────┘  └───────────┘    │
 │            ↕ Axios (JWT in Authorization header)            │
 ├─────────────────────────────────────────────────────────────┤
 │                   Express.js Backend                        │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
-│  │  Controllers │  │   Services   │  │    Middleware     │  │
-│  │  (HTTP I/O)  │──│(Business     │  │(auth, validate,  │  │
-│  │              │  │  Logic)      │  │ error handling)  │  │
-│  └──────────────┘  └──────────────┘  └──────────────────┘  │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐   │
+│  │  Controllers │  │   Services   │  │    Middleware    │   |
+│  │  (HTTP I/O)  │──│(Business     │  │(auth, validate,  │   │
+│  │              │  │  Logic)      │  │ error handling)  │   │
+│  └──────────────┘  └──────────────┘  └──────────────────┘   │
 │            ↕ Mongoose ODM (sessions/transactions)           │
 ├─────────────────────────────────────────────────────────────┤
 │              MongoDB (Replica Set for Transactions)         │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐                  │
-│  │  Users   │  │ Samples  │  │AuditLogs │                  │
-│  └──────────┘  └──────────┘  └──────────┘                  │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐                   │
+│  │  Users   │  │ Samples  │  │AuditLogs │                   │
+│  └──────────┘  └──────────┘  └──────────┘                   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
